@@ -1,8 +1,14 @@
 import React from 'react'
-import logo from '../assets/log.png'
+import logo from '../assets/fikisha_logo.png'
 import { useNavigate } from 'react-router-dom'
+import { useGlobalContext } from '../context'
 const Navbar = () => {
-
+   const logOut = () => {
+     localStorage.removeItem('fikisha_customer')
+     localStorage.removeItem('fikisha_agent')
+     window.location.reload()
+   }
+   const { customer, agent } = useGlobalContext()
   
   return (
     <>
@@ -10,7 +16,7 @@ const Navbar = () => {
         <div className='container'>
           <div>
             <img src={logo} alt='logo' className='logo ms-3 nav-brand ' />
-            <span className='ms-3 fw-bold'>AidReach</span>
+            <span className='ms-3 fw-bold'>Fikisha</span>
           </div>
           <button
             className='navbar-toggler'
@@ -27,23 +33,46 @@ const Navbar = () => {
                   Home
                 </a>
               </li>
-              <li className='nav-item m-2'>
-                <a className='nav-link' href='/login'>
-                  Login
-                </a>
-              </li>
-              <li className='nav-item m-2'>
-                <a className='nav-link' href='/register'>
-                  Sign Up
-                </a>
-              </li>
+              {customer && (
+                <li className='nav-item m-2'>
+                  <a className='nav-link' href='/customer'>
+                    Customer
+                  </a>
+                </li>
+              )}
+              {agent && (
+                <li className='nav-item m-2'>
+                  <a className='nav-link' href='/agent'>
+                    Agent
+                  </a>
+                </li>
+              )}
+              {(customer || agent) && (
+                <li className='nav-item m-2'>
+                  <a className='nav-link' onClick={() => logOut()}>
+                    Logout
+                  </a>
+                </li>
+              )}
+              {((!customer) || (!agent)) && (
+                <>
+                  <li className='nav-item m-2'>
+                    <a className='nav-link' href='/login'>
+                      Login
+                    </a>
+                  </li>
+                  <li className='nav-item m-2'>
+                    <a className='nav-link' href='/register'>
+                      Sign Up
+                    </a>
+                  </li>
+                </>
+              )}
               <li
                 className='nav-item
               m-2'
               >
-                <button className='btn btn-outline-dark nav-link rounded border px-3'>
-                  Connect
-                </button>
+             
               </li>
             </ul>
           </div>

@@ -6,8 +6,8 @@ const Graphs = () => {
     <section className='m-5'>
      
       <div className='row'>
-        <SingleGraph type='donations' />
-        <SingleGraph type='votes' />
+        <SingleGraph type='order' />
+       
       </div>
     </section>
   )

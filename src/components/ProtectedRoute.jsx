@@ -1,18 +1,23 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { useGlobalContext } from '../context'
 import { Navigate } from 'react-router-dom'
 const ProtectedRoute = ({ children,type }) => {
   
-  const { userData, setUserData } = useGlobalContext()
-const obtainedData = userData ||(
-  localStorage.getItem('aidreach_donor') ||
-  localStorage.getItem('aidreach_ngo') ||
-  null)
-  if (obtainedData) {
-    if(obtainedData.type!==type){
-      return <Navigate to='/login' replace={true} />
-    }
-    setUserData(obtainedData)
+  const { agent, setAgent , customer, setCustomer } = useGlobalContext()
+const cust = JSON.parse(localStorage.getItem('fikisha_customer'))
+const ag = JSON.parse(localStorage.getItem('fikisha_agent'))
+useEffect(() => {
+  if (cust) {
+    setCustomer(cust)
+  }
+  if (ag) {
+    setAgent(ag)
+  }
+}, [])
+  if (type === 'customer' && customer) {
+    return children
+  }
+  if (type === 'agent' && agent) {
     return children
   }
   return <Navigate to='/login' replace={true} />

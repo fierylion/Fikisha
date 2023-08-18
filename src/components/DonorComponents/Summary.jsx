@@ -1,12 +1,12 @@
 import React from 'react'
 import {BsThreeDots} from 'react-icons/bs'
-const Summary = () => {
+const Summary = ({success, number}) => {
   return (
     <section>
       <div className='row'>
-        <SingleSummary name={'Donated'} amount={'100 f'}/>
+        <SingleSummary name={'Orders'} amount={success}/>
         
-        <SingleSummary name={'Votes'} amount={120}/>
+        <SingleSummary name={'Delivered'} amount={number}/>
         
        
       </div>

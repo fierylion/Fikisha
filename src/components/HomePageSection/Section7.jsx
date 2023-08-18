@@ -19,14 +19,11 @@ const Section7 = () => {
               />
             </div>
             <div className='col-md-6'>
-              <h5 className='my-2 mt-3 '>Volunteer</h5>
-              <h2 className='my-2'>Helping Today, Helping Tommorow</h2>
+              <h2 className='my-3'>Ready to Get Started?</h2>
               <p className='text-justify'>
-                Be a Changemaker with AidReach. Join our movement for
-                transparent and impactful charity donations. Together, we can
-                make a lasting difference. Join us today!
+                Experience the Future of Package Delivery Today
               </p>
-              <button className='btn btn-outline-dark border'>Join Us</button>
+              <button className='btn btn-primary border'>Join Us</button>
             </div>
           </div>
         )}

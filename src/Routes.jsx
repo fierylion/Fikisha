@@ -6,8 +6,9 @@ import DonorPage from './pages/Donor'
 import LoginPage from './pages/Login'
 import RegistrationPage from './pages/Register'
 import NgoPage from './pages/Ngos'
-
-
+import CustomerOrder from './pages/CustomerOrder'
+import OrderDetails from './pages/OrderDetails'
+import AgentDetails from './pages/AgentDetails'
 const RoutesPage = () => {
   return (
     <React.Suspense fallback={<div>Loading...</div>}>
@@ -17,14 +18,45 @@ const RoutesPage = () => {
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegistrationPage />} />
           <Route
-            path='/donor'
+            path='/customer'
             element={
-              <ProtectedRoute>
+              <ProtectedRoute type={'customer'}>
                 <DonorPage />
               </ProtectedRoute>
             }
           />
-          <Route path='/ngo' element={<NgoPage />} />
+          <Route
+            path='/customer/order'
+            element={
+              <ProtectedRoute type={'customer'}>
+                <CustomerOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/customer/order/details'
+            element={
+              <ProtectedRoute type={'customer'}>
+                <OrderDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/agent'
+            element={
+              <ProtectedRoute type={'agent'}>
+                <NgoPage />{' '}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/agent/orders'
+            element={
+              <ProtectedRoute type={'agent'}>
+                <AgentDetails />{' '}
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </React.Suspense>

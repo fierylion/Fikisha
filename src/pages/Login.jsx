@@ -25,7 +25,7 @@ const schema = yup
    
 const Login = () => {
   const navigate = useNavigate()
-  const [category, setCategory] = useState('donor')
+  const [category, setCategory] = useState('customer')
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,
@@ -43,15 +43,15 @@ const Login = () => {
   const { data, isLoading, error, obtainData } = useFetch()
   const onSubmit = (details) => {
     obtainData(
-      category === 'ngo' ? '/ngo/login' : '/donor/login',
+      category === 'agent' ? '/login/agent' : '/login/customer',
       'post',
       {email, password}
     )
   }
   useEffect(() => {
     if (data) {
-      localStorage.setItem((category==='donor')?'aidreach_donor':'aidreach_ngo', JSON.stringify({token:data.token,type:category, data:(category==='donor')?data.donor:data.ngo}))
-      navigate((category==='donor')?'/donor':'/ngo')
+      localStorage.setItem((category==='agent')?'fikisha_agent':'fikisha_customer', JSON.stringify({token:data.token,type:category, data:(category==='customer')?data.agent:data.customer}))
+      navigate((category==='customer')?'/customer':'/agent')
     }
     if (error) {
       console.log(error)
@@ -62,29 +62,33 @@ const Login = () => {
       <div className='container size_input h-75 mx-auto'>
         <div>
           <div>
-            <h2>Log in to Aid Reach</h2>
+            <h2>Log in to Fikisha</h2>
             <small>
               Welcome back! login with your entered during registration
             </small>
             <div className='my-3'>
-              Login as {category === 'ngo' ? 'an organization' : 'a donor'}
+              Login as {category === 'agent' ? 'an Agent' : 'a Customer'}
             </div>
             <div className='d-flex flex-column '>
               <button
-                className={`btn ${
-                  category === 'donor' ? 'bg-success' : 'btn-outline-dark'
+                className={`btn  ${
+                  category === 'customer'
+                    ? 'bg-primary text-white'
+                    : 'btn-outline-dark'
                 } my-3`}
-                onClick={() => setCategory('donor')}
+                onClick={() => setCategory('customer')}
               >
-                Donor
+                Customer
               </button>
               <button
                 className={`btn ${
-                  category === 'ngo' ? 'bg-success' : 'btn-outline-dark'
+                  category === 'agent'
+                    ? 'bg-primary text-white'
+                    : 'btn-outline-dark'
                 } my-3`}
-                onClick={() => setCategory('ngo')}
+                onClick={() => setCategory('agent')}
               >
-                Ngo
+                Agent
               </button>
             </div>
           </div>
@@ -116,7 +120,7 @@ const Login = () => {
                       (errors.email && 'is-invalid') || ''
                     }}`}
                     placeholder={
-                      category === 'ngo' ? 'Organization Email' : 'Your Email'
+                      category === 'agent' ? 'Agent Email' : 'Your Email'
                     }
                     {...register('email')}
                     value={email}
@@ -144,9 +148,7 @@ const Login = () => {
                       (errors.password && 'is-invalid') || ''
                     }}`}
                     placeholder={
-                      category === 'ngo'
-                        ? 'Organization Password'
-                        : 'Your Password'
+                      category === 'agent' ? 'Agent Password' : 'Your Password'
                     }
                     {...register('password')}
                     value={password}

@@ -38,7 +38,7 @@ const SingleGraph = ({ type, chartData }) => {
   const options = {
     title: {
   
-      text: `${type === 'votes' ? 'Votes' : 'Donations'} Over Time`,
+      text: `Orders Over Time`,
       align: 'left',
       style: {
         fontSize: '13px',
@@ -82,7 +82,7 @@ const SingleGraph = ({ type, chartData }) => {
   ]
 
   return (
-    <div className='col-md-6 p-1 my-3'>
+    <div className='col-md-6 mx-auto p-1 my-3'>
      
       <Chart options={options} series={series} type='line' height={400} />
       <div className='ms-2'>

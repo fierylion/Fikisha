@@ -1,8 +1,8 @@
 import React from 'react'
-import { PiBowlFoodFill } from 'react-icons/pi'
-import {MdHealthAndSafety} from 'react-icons/md' 
-import {FaHandHoldingWater} from 'react-icons/fa'
-import {MdCastForEducation} from 'react-icons/md'
+import { BiLeaf } from 'react-icons/bi'
+import { GiReceiveMoney } from 'react-icons/gi' 
+import { LuHeartHandshake } from 'react-icons/lu'
+import { GrSecure } from 'react-icons/gr'
 import { useInViewport } from 'react-in-viewport'
 const Section5 = () => {
   const myRef = React.useRef()
@@ -15,50 +15,53 @@ const Section5 = () => {
           <div className='row move_effect'>
             <div className='col-sm-6'>
               <h3 className='mb-sm-3 mb-md-5'>
-                Connect with Nonprofit Organizations Worldwide{' '}
+                Fikisha is all about community empowerment
               </h3>
               <p className='mb-sm-3 mb-md-5 fs-6 w-75'>
                 <small>
-                  We envision a world where every charitable contribution, no
-                  matter how small, leads to significant positive change. By
-                  combining blockchain technology with a community-driven
-                  approach, we foster transparency, trust, and collaboration
-                  among donors and NGOs.
+                  By utilizing local motorcycles and autorickshaws, we're not
+                  only reducing delivery costs but also creating income
+                  opportunities for individuals in your community
                 </small>
               </p>
-              <button className='btn btn-outline-dark border'>Donate</button>
+              <button className='btn btn-primary border'>Join Us</button>
             </div>
             <div className='col-sm-6'>
               <div className='row text-center '>
-                <div className='col-sm-6 p-3'>
-                  <PiBowlFoodFill className='medium_icons' />
-                  <h4>Healthy Food</h4>
+                <div className='col-md-6 p-3'>
+                  <BiLeaf className='medium_icons' />
+                  <h4>Conserving Environment</h4>
                   <p className='home_page_paragraph'>
-                    We tirelessly provide nutritious meals, ending empty
-                    stomachs.
+                    By utilizing eco-friendly modes of transportation, we're
+                    reducing carbon emissions and contributing to a cleaner
+                    planet.
                   </p>
                 </div>
-                <div className='col-sm-6 p-3'>
-                  <MdHealthAndSafety className='medium_icons' />
-                  <h4>Medical Help</h4>
+                <div className='col-md-6 p-3'>
+                  <GiReceiveMoney className='medium_icons' />
+                  <h4>Cost-Effective</h4>
                   <p className='home_page_paragraph'>
-                    Quality healthcare is a basic right, often inaccessible.
+                    Our community-driven approach allows us to offer
+                    cost-effective delivery solutions without compromising on
+                    quality.
                   </p>
                 </div>
-                <div className='col-sm-6 p-3'>
-                  <FaHandHoldingWater className='medium_icons' />
-                  <h4>Clean Water</h4>
+                <div className='col-md-6 p-3'>
+                  <GrSecure className='medium_icons' />
+                  <h4>Trusted Deliveries</h4>
                   <p className='home_page_paragraph'>
-                    Clean, safe water remains elusive for countless. We ensure
-                    access to clean sources
+                    We deliver trust –
+                    every time. Our commitment to reliability and honesty
+                    ensures secure deliveries you can depend on.
                   </p>
                 </div>
-                <div className='col-sm-6 p-3'>
-                  <MdCastForEducation className='medium_icons' />
-                  <h4>Education</h4>
+                <div className='col-md-6 p-3'>
+                  <LuHeartHandshake className='medium_icons' />
+                  <h4>Local Empowerment</h4>
                   <p className='home_page_paragraph'>
-                    Support empowers all ages with knowledge, skills, and
-                    opportunities.
+                    We're not just delivering packages, but also creating income
+                    opportunities for local riders, boosting your neighborhood's
+                    economy.
                   </p>
                 </div>
               </div>

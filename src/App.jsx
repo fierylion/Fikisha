@@ -8,7 +8,7 @@ import { BsFacebook } from 'react-icons/bs'
 import { AiFillTwitterCircle } from 'react-icons/ai'
 import { AiFillInstagram } from 'react-icons/ai'
 import { AiFillGithub } from 'react-icons/ai'
-import logo from './assets/log.png'
+import logo from './assets/fikisha_logo.png'
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
              
               <div className='m-3'>
                 <img src={logo} alt='logo' className='logo ' />
-                <h3 className='text-center ms-3 d-inline-block'>Aid Reach</h3>
+                <h3 className='text-center ms-3 d-inline-block'>Fikisha</h3>
               </div>
               <div className=''>
                 <BsFacebook className='footer_icons mx-2' />

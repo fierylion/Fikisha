@@ -37,7 +37,7 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #F2F7FF !important;
+  background-color: #d5dfece5 !important;
   background-blend-mode: multiply;
   
 }
@@ -153,8 +153,8 @@ color: var(--brown-color) !important;
   
 }
 .home-charity-img{
-  width: 300px;
-  height:300px;
+  width: 600px;
+  height:600px;
   object-fit: cover;
   background-blend-mode: multiply;
   border-radius: 10px;
@@ -207,11 +207,15 @@ color: var(--brown-color) !important;
     width: 80px;
     height: 80px;
     border-radius: 100%;
-    background-color: var(--purple-color);
+    background-color: rgb(214, 189, 234);
     color: var(--brown-color);
     padding: 10px;
     margin: 10px;
   }
 .link{
   cursor: pointer;
+}
+.home_image{
+
+  height: 200px !important;
 }

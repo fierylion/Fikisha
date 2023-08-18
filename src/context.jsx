@@ -1,7 +1,12 @@
 import React, { useContext, useReducer, useState, useEffect } from 'react'
 const AppContext = React.createContext()
 const AppProvider = ({ children }) => {
-  const [userData, setUserData] = useState(localStorage.getItem('aidreach_donor')||localStorage.getItem('aidreach_ngo')||null)
+ const [customer, setCustomer] = useState(
+   JSON.parse(localStorage.getItem('fikisha_customer'))
+ )
+ const [agent, setAgent] = useState(
+   JSON.parse(localStorage.getItem('fikisha_agent'))
+ )
   
   const divideToThree = (noEle, arr) => {
     let sta = 0
@@ -14,16 +19,32 @@ const AppProvider = ({ children }) => {
     }
     return result
   }
+  const [modalData, setModalData] = useState({center:{
+    lat: 0,
+    lng: 0,
+  }})
+   const [receiverLocation, setReceiverLocation] = useState({
+     lat: 0,
+     lng: 0,
+   })
+   const [senderLocation, setSenderLocation] = useState({ lat: 0, lng: 0})
   
 
 
   return (
     <AppContext.Provider
       value={{
-       userData,
-        setUserData,
+        modalData,
+        setModalData, 
+        senderLocation,
+        setSenderLocation,
+        receiverLocation,
+        setReceiverLocation,
         divideToThree,
-        
+        customer,
+        setCustomer,
+        agent,
+        setAgent,
       }}
     >
       {children}

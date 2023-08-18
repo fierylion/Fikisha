@@ -6,12 +6,11 @@ import { BiSolidDownvote } from 'react-icons/bi'
 import { BiSolidUpvote } from 'react-icons/bi'
 import uuid from 'react-uuid';
 import { useInViewport } from 'react-in-viewport'
+import { Slide } from 'react-awesome-reveal';
 
 const Section6 = ({propos}) => {
  const [page, setPage] = React.useState(0);
  const {divideToThree}=useGlobalContext();
-  const myRef = React.useRef()
-   const { inViewport, enterCount } = useInViewport(myRef, {}, {}, {})
   
 
    const handleResize = (end = true) => {
@@ -38,13 +37,13 @@ const Section6 = ({propos}) => {
 
   return (
     <>
-      <section className='m-5 move_effect' id='sect6' ref={myRef}>
-        {inViewport && (
+      <section className='m-5 move_effect' id='sect6'>
+        <Slide>
           <div>
             <div className='d-flex justify-content-around move_effect'>
               <h5 className='w-75'>
-                 Hear from our satisfied
-                customers about their experiences with Fikisha
+                Hear from our satisfied customers about their experiences with
+                Fikisha
               </h5>
               <div>
                 <button
@@ -68,7 +67,7 @@ const Section6 = ({propos}) => {
               <ProposalCards proposals={dividedArr[page]} />
             </div>
           </div>
-        )}
+        </Slide>
       </section>
     </>
   )

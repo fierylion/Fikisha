@@ -3,6 +3,7 @@ import { FaRoute } from 'react-icons/fa'
 import { BiSolidShoppingBags } from 'react-icons/bi'
 import { AiOutlineFieldTime } from 'react-icons/ai'
 import { useInViewport } from 'react-in-viewport'
+import { Slide } from 'react-awesome-reveal'
 const Section2 = () => {
   // scale - balanced - Decentralized
   //check-to-slot - voting
@@ -12,17 +13,14 @@ const Section2 = () => {
   // Voting Power: As a donor, you have the power to vote for the projects you believe in. Each Filecoin token you contribute grants you voting power.
 
   // Decentralized Governance: The blockchain governs the allocation of funds. The project with the most votes receives the funds, ensuring complete fairness and accountability.-
-  const myRef = React.useRef()
-  const { inViewport, enterCount } = useInViewport(myRef, {}, {}, {})
-  
-
+ 
 
   return (
     <>
-      <section className='my-5 ' id='sect2' ref={myRef}>
-        {inViewport && (
-          <div className='row mx-2 move_effect'>
-            <div className='col-md-6 p-3'>
+      <section className='my-5 ' id='sect2'>
+        <div className='row mx-2 move_effect'>
+          <div className='col-md-6 p-3'>
+            <Slide>
               <div className='text-center mb-4'>
                 <BiSolidShoppingBags className='icons' />
                 <h3 className='mt-4 mb-2'> Place Your Order</h3>
@@ -30,8 +28,10 @@ const Section2 = () => {
               <p className='text-justify '>
                 Use our easy-to-navigate platform to place your delivery order.
               </p>
-            </div>
-            <div className='col-md-6 p-3'>
+            </Slide>
+          </div>
+          <div className='col-md-6 p-3'>
+            <Slide direction='up'>
               <div className='text-center mb-4'>
                 <AiOutlineFieldTime className='icons' />
                 <h3 className='mt-4 mb-2'>Choose Your Mode: Fast or Shared</h3>
@@ -40,8 +40,10 @@ const Section2 = () => {
                 Need it lightning-fast? Opt for our Ultrafast option. Prefer to
                 wait and share cost? Choose our Community Sharing option
               </p>
-            </div>
-            <div className='col-md-6 p-3'>
+            </Slide>
+          </div>
+          <div className='col-md-6 p-3'>
+            <Slide direction='right'>
               <div className='text-center mb-4'>
                 <FaRoute className='icons' />
                 <h3 className=''>Track Your Delivery</h3>
@@ -50,9 +52,9 @@ const Section2 = () => {
                 Keep tabs on your delivery in real-time as it makes its way to
                 its destination.
               </p>
-            </div>
+            </Slide>
           </div>
-        )}{' '}
+        </div>
       </section>
     </>
   )

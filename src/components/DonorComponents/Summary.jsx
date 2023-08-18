@@ -1,14 +1,20 @@
 import React from 'react'
 import {BsThreeDots} from 'react-icons/bs'
+import { Fade, Slide } from 'react-awesome-reveal'
 const Summary = ({success, number}) => {
   return (
     <section>
       <div className='row'>
-        <SingleSummary name={'Orders'} amount={success}/>
-        
-        <SingleSummary name={'Delivered'} amount={number}/>
-        
-       
+        <div className='col-sm-6'>
+          <Slide>
+            <SingleSummary name={'Orders'} amount={success} />
+          </Slide>
+        </div>
+        <div className='col-sm-6'>
+          <Slide direction='right'>
+            <SingleSummary name={'Delivered'} amount={number} />
+          </Slide>
+        </div>
       </div>
     </section>
   )

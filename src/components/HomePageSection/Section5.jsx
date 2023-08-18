@@ -4,16 +4,15 @@ import { GiReceiveMoney } from 'react-icons/gi'
 import { LuHeartHandshake } from 'react-icons/lu'
 import { GrSecure } from 'react-icons/gr'
 import { useInViewport } from 'react-in-viewport'
+import { Slide } from 'react-awesome-reveal'
 const Section5 = () => {
-  const myRef = React.useRef()
-  const { inViewport, enterCount } = useInViewport(myRef, {}, {}, {})
  
   return (
     <>
-      <section className='m-5 ' id='sect5' ref={myRef}>
-        {inViewport && (
-          <div className='row move_effect'>
-            <div className='col-sm-6'>
+      <section className='m-5 ' id='sect5'>
+        <div className='row move_effect'>
+          <div className='col-sm-6'>
+            <Slide>
               <h3 className='mb-sm-3 mb-md-5'>
                 Fikisha is all about community empowerment
               </h3>
@@ -24,9 +23,17 @@ const Section5 = () => {
                   opportunities for individuals in your community
                 </small>
               </p>
-              <button className='btn btn-primary border'>Join Us</button>
-            </div>
-            <div className='col-sm-6'>
+              <button
+                className='btn btn-primary border'
+                onClick={() => (window.location.pathname = '/register')}
+              >
+                Join Us
+              </button>
+            </Slide>
+          </div>
+
+          <div className='col-sm-6'>
+            <Slide direction='right'>
               <div className='row text-center '>
                 <div className='col-md-6 p-3'>
                   <BiLeaf className='medium_icons' />
@@ -50,9 +57,8 @@ const Section5 = () => {
                   <GrSecure className='medium_icons' />
                   <h4>Trusted Deliveries</h4>
                   <p className='home_page_paragraph'>
-                    We deliver trust –
-                    every time. Our commitment to reliability and honesty
-                    ensures secure deliveries you can depend on.
+                    We deliver trust – every time. Our commitment to reliability
+                    and honesty ensures secure deliveries you can depend on.
                   </p>
                 </div>
                 <div className='col-md-6 p-3'>
@@ -65,9 +71,9 @@ const Section5 = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </Slide>
           </div>
-        )}
+        </div>
       </section>
     </>
   )

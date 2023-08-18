@@ -1,6 +1,7 @@
 import React from 'react'
 import CountUp from 'react-countup'
 import {useInViewport} from 'react-in-viewport'
+import { Fade } from 'react-awesome-reveal'
 const Section4 = () => {
  // no of donors, proposals, ngos, donations
  const data = {
@@ -9,12 +10,10 @@ const Section4 = () => {
   ngos: 10,
   donations: 100
  }
- const myRef = React.useRef();
- const {inViewport, enterCount} = useInViewport(myRef, {}, {}, {});
 
   return (
-    <section className='p-3 my-5' id='sect4' ref={myRef}>
-      {inViewport && (
+    <section className='p-3 my-5' id='sect4'>
+      <Fade>
         <div className='text-center move_effect move_effect'>
           <div className='row'>
             <div className=' col-lg-3 col-sm-6 p-3'>
@@ -43,7 +42,7 @@ const Section4 = () => {
             </div>
           </div>
         </div>
-      )}
+      </Fade>
     </section>
   )
 }

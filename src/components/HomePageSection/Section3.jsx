@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import uuid from 'react-uuid'
 import { useGlobalContext } from '../../context'
 import { useInViewport } from 'react-in-viewport'
-
+import { Slide } from 'react-awesome-reveal'
   
 const Section3 = ({imageCarousel}) => {
   const {divideToThree} =useGlobalContext()

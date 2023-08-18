@@ -76,7 +76,7 @@ const CustomerOrder = () => {
     <section className='container my-5'>
       <button
         className='btn btn-outline-dark'
-        onClick={() => navigate('/customer')}
+        onClick={() => (window.location.pathname = '/customer')}
       >
         Back
       </button>

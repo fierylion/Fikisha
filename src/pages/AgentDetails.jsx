@@ -31,7 +31,7 @@ const OrderDetails = () => {
   if (data) console.log(data)
   return (
     <section>
-    <button className='btn btn-outline-dark ' onClick={()=>navigate('/agent')}>Back</button>
+    <button className='btn btn-outline-dark ' onClick={()=>window.location.pathname='/agent'}>Back</button>
       <h1 className='text-center'>  Hello, Accept Some Orders</h1>
       <div>
         {error && (

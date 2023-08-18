@@ -20,7 +20,9 @@ const OrderDetails = () => {
       }
     })
   }, [customer])
-  if(data) console.log(data);
+  if(data) {
+    data.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+  };
   return (
     <section>
       <h1 className='text-center'>Order Details</h1>

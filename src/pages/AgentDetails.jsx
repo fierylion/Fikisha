@@ -28,7 +28,9 @@ const OrderDetails = () => {
       }
     )
   }, [agent])
-  if (data) console.log(data)
+  if (data) {
+   data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  }
   return (
     <section>
     <button className='btn btn-outline-dark ' onClick={()=>window.location.pathname='/agent'}>Back</button>

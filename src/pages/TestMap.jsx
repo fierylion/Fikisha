@@ -1,15 +1,18 @@
 import { PositionOptions } from 'mapbox-gl'
 import React, { useState, useEffect } from 'react'
 import Map, {Marker,Source, Layer, GeolocateControl} from 'react-map-gl'
+
 const TestMap = () => {
   const [direction, setDirection] = useState({latitude:0, longitude:0})
+  const mapRef = React.useRef()
   useEffect(() => {
     const navigation = navigator.geolocation
+    
    if(navigation){
     navigation.getCurrentPosition(
       (position)=>{
         const {latitude, longitude} = position.coords;
-        console.log(latitude, longitude)
+        mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
         setDirection({longitude:longitude, latitude:latitude})
 
 
@@ -17,10 +20,11 @@ const TestMap = () => {
     )
     
    }
-  }, [])
+  }, [mapRef.current])
   
   return (
     <Map
+    ref={mapRef}
       mapboxAccessToken='pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
       initialViewState={{
         ...direction, 
@@ -31,11 +35,13 @@ const TestMap = () => {
       style={{ width: 600, height: 400 }}
       mapStyle='mapbox://styles/mapbox/streets-v9'
     >
-    <GeolocateControl
+      <Marker longitude={direction.longitude} latitude={direction.latitude}/>
+      <GeolocateControl
+        positionOptions={{enableHighAccuracy: true}}
+        trackUserLocation={true}
+      />
+       
 
-      positionOptions={{enableHighAccuracy:true}}
-      trackUserLocation={true}
-    />
     </Map>
   )
 }

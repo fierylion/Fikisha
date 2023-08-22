@@ -1,6 +1,7 @@
 import { PositionOptions } from 'mapbox-gl'
 import React, { useState, useEffect } from 'react'
-import Map, {Marker,Source, Layer, GeolocateControl} from 'react-map-gl'
+import Map, {Marker,Source, Layer, GeolocateControl, NavigationControl} from 'react-map-gl'
+
 
 const TestMap = () => {
   const [direction, setDirection] = useState({latitude:0, longitude:0})
@@ -13,13 +14,22 @@ const TestMap = () => {
       (position)=>{
         const {latitude, longitude} = position.coords;
         mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
-        setDirection({longitude:longitude, latitude:latitude})
-
-
       }
     )
+    const watchId =    navigation.watchPosition(
+          (position)=>{
+            const {latitude, longitude} = position.coords;
+            // mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
+            setDirection({longitude, latitude})
+          }
+    )
+     return () => {
+       navigation.clearWatch(watchId)
+     }
+    
     
    }
+  
   }, [mapRef.current])
   
   return (
@@ -40,7 +50,10 @@ const TestMap = () => {
         positionOptions={{enableHighAccuracy: true}}
         trackUserLocation={true}
       />
-       
+      <NavigationControl showCompass={true}/>
+      
+      
+      
 
     </Map>
   )

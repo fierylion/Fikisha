@@ -31,6 +31,7 @@ const OrderDetails = () => {
   if (data) {
    data.orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }
+  
   return (
     <section>
     <button className='btn btn-outline-dark ' onClick={()=>window.location.pathname='/agent'}>Back</button>
@@ -57,11 +58,38 @@ const OrderDetails = () => {
 }
 const SingleDetail = ({ data }) => {
   const [location, setLocation] = useState()
+  const {agent} = useGlobalContext()
   const created_at = new Date(data.created_at)
+   const {obtainData, data:resData, isLoading, error} = useFetch()
+  const handleAccept = ()=>{
+   
+    obtainData(`/agent/order/accept/${data.id}`, 'get', {}, {
+      headers: {
+        Authorization: `Bearer ${agent.token}`
+      }
+    }) 
+
+  }
+ 
 
   return (
     <>
-     
+      <div>
+        {error && (
+          <MessageAlerts
+            msg={error.response?.data?.msg || error.response?.data?.err}
+            color={'danger'}
+          />
+        )}
+        {resData && (
+          <MessageAlerts msg={'Thank you for accepting the order, You can check the order'} color={'success'} />
+        )}
+        {isLoading && (
+          <MessageAlerts msg={'Snding Data!!!'} color={'warning'} />
+        )}
+      </div>
+      {resData && <button className='btn btn-outline-success ' onClick={()=>window.location.pathname='/agent/orders/accepted'}>Accepted Orders</button>}
+      { !resData &&
       <div className='border rounded p-4 text-capitalize  mx-auto'>
         <h6 className='col-6'>Category: {data.category}</h6>
         <div className='row '>
@@ -81,9 +109,12 @@ const SingleDetail = ({ data }) => {
             receiverLocation={data.receiverLocation.split(',')}
             setLoc={setLocation}
           />
-          <button className='btn btn-success mx-auto'>Accept</button>
+          <button className='btn btn-success mx-auto' onClick={handleAccept}>
+            Accept
+          </button>
         </div>
       </div>
+      }
     </>
   )
 }
@@ -95,7 +126,30 @@ const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
     'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
 
   const mapRef = useRef()
+  const [direction, setDirection] = useState({
+    latitude: 0,
+    longitude: 0,
+    })
+  useEffect(() => {
+    const navigation = navigator.geolocation
 
+    if (navigation) {
+      navigation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords
+        mapRef.current
+          ?.getMap()
+          ?.flyTo({ center: [longitude, latitude], zoom: 16 })
+      })
+      const watchId = navigation.watchPosition((position) => {
+        const { latitude, longitude } = position.coords
+        // mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
+        setDirection({ longitude, latitude })
+      })
+      return () => {
+        navigation.clearWatch(watchId)
+      }
+    }
+  }, [mapRef.current])
   return (
     <>
       <button className='btn btn-primary' onClick={() => setOpen(true)}>
@@ -104,24 +158,27 @@ const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
       {open && (
         <div>
           <ReactMapGL
-            width={'100%'}
-            height={100}
-            latitude={senderLocation[0]}
-            longitude={senderLocation[1]}
-            zoom={4}
-            mapStyle='mapbox://styles/mapbox/streets-v11'
+            style={{ width: 600, height: 400 }}
+            initialViewState={ 
+              {
+                latitude: direction.latitude,
+                longitude: direction.longitude,
+                zoom: 16,
+              }
+            }
+           
+            mapStyle='mapbox://styles/mapbox/streets-v9'
             mapboxAccessToken={pub}
           >
             <NavigationControl position='bottom-right' />
             <GeolocateControl
               position='top-left'
-              trackUserLocation
-              onGeolocate={(e) =>
-                setLoc({
-                  lng: e.coords.longitude,
-                  lat: e.coords.latitude,
-                })
-              }
+              positionOptions={{ enableHighAccuracy: true }}
+              trackUserLocation={true}
+            />
+            <Marker
+            latitude={direction.latitude}
+            longitude={direction.longitude}
             />
             <Marker latitude={senderLocation[0]} longitude={senderLocation[1]}>
               <div>Sender</div>
@@ -139,6 +196,7 @@ const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
                 geometry: {
                   type: 'LineString',
                   coordinates: [
+                    [direction.longitude, direction.latitude],
                     [senderLocation[1], senderLocation[0]],
                     [receiverLocation[1], receiverLocation[0]],
                   ],

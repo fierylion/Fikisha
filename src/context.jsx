@@ -1,4 +1,6 @@
 import React, { useContext, useReducer, useState, useEffect } from 'react'
+import api from './api'
+import axios from 'axios'
 const AppContext = React.createContext()
 const AppProvider = ({ children }) => {
  const [customer, setCustomer] = useState(
@@ -28,7 +30,54 @@ const AppProvider = ({ children }) => {
      lng: 0,
    })
    const [senderLocation, setSenderLocation] = useState({ lat: 0, lng: 0})
-  
+   //Update driver's location
+    useEffect(() => {
+      const sendDriverLocation = async () => {
+        if(!agent) return
+        console.log('entered')
+        try{
+          const req = await api.get(`/agent`, {
+            headers: {
+              Authorization: `Bearer ${agent.token}`,
+            },
+          })
+          const { agent: ag } = req.data
+
+          const roomName = `agent-${req.data.id}`
+          const connect = () => {}
+          const socket = new WebSocket(
+            `ws://localhost:8000/ws/location/${roomName}/`
+          )
+         
+          // Function to send location updates to the server
+          const sendLocationUpdate = (latitude, longitude) => {
+            const locationData = {
+              latitude,
+              longitude,
+            }
+            socket.send(JSON.stringify(locationData))
+          }
+          // Watch the driver's position and send updates
+          const watchPosition = navigator.geolocation.watchPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords
+              sendLocationUpdate(latitude, longitude)
+            },
+            (error) => {
+              console.error('Error getting location:', error)
+            }
+          )
+          return () => {
+            navigator.geolocation.clearWatch(watchPosition)
+            socket.close()
+
+          }
+        }catch(err){
+          console.log('error')
+        }
+      }
+      sendDriverLocation()
+    }, [agent])
 
 
   return (

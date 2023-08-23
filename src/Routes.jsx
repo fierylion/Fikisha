@@ -10,6 +10,7 @@ import CustomerOrder from './pages/CustomerOrder'
 import OrderDetails from './pages/OrderDetails'
 import AgentDetails from './pages/AgentDetails'
 import TestMap from './pages/TestMap'
+import AgentAcceptedOrders from './pages/AgentAcceptedOrders'
 const RoutesPage = () => {
   return (
     <React.Suspense fallback={<div>Loading...</div>}>
@@ -42,12 +43,7 @@ const RoutesPage = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path='/test'
-            element={
-              <TestMap/>
-            }
-          />
+          <Route path='/test' element={<TestMap />} />
           <Route
             path='/agent'
             element={
@@ -61,6 +57,14 @@ const RoutesPage = () => {
             element={
               <ProtectedRoute type={'agent'}>
                 <AgentDetails />{' '}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/agent/orders/accepted'
+            element={
+              <ProtectedRoute type={'agent'}>
+                <AgentAcceptedOrders />{' '}
               </ProtectedRoute>
             }
           />

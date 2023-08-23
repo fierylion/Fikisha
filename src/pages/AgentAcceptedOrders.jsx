@@ -10,44 +10,68 @@ import ReactMapGL, {
   Layer,
 } from 'react-map-gl'
 import { useState } from 'react'
+import MessageAlerts from '../components/MessageAlerts'
+import { useNavigate } from 'react-router-dom'
 const OrderDetails = () => {
-  const {obtainData, data, isLoading, error} = useFetch()
-  const {customer} = useGlobalContext()
-    useEffect(() => {
-      obtainData(
-        '/customer/order',
-        'get',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${customer.token}`,
-          },
-        }
-      )
-    }, [customer])
+  const { obtainData, data, isLoading, error } = useFetch()
+  const { navigate } = useNavigate()
+  const { agent } = useGlobalContext()
   const [category, setCategory] = useState('pending')
   const [currentData, setCurrentData] = useState([])
   useEffect(() => {
-    const filterOders = (dt, ind) => {
-      if (category === 'pending') {
-        return dt.transport === null
+    obtainData(
+      '/agent/order/deliver',
+      'get',
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${agent.token}`,
+        },
       }
-      if (category === 'inprogress') {
-        return dt.transport !== null && dt.transport.status === 'pending'
+    )
+  }, [agent])
+  useEffect(
+    ()=>{
+      const filterOders = (dt, ind)=>{
+      if(category==='pending'){
+        return (dt.transport === null)
       }
-      return dt.transport !== null && dt.transport.status === 'delivered'
+      if(category==='inprogress'){
+        return (dt.transpot !== null && dt.transport.status==='pending')
+      }
+      return dt.transpot !== null && dt.transport.status === 'delivered'
     }
-    if (data) {
+    if(data){
       data.orders.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          )
       setCurrentData(data.orders.filter(filterOders))
     }
-  }, [category, data])
+
+    }, [category, data]
+  )
  
+
   return (
     <section>
-      <h1 className='text-center'>Order Details</h1>
+      <button
+        className='btn btn-outline-dark '
+        onClick={() => (window.location.pathname = '/agent')}
+      >
+        Back
+      </button>
+      <h1 className='text-center'> Some Orders You Accepted</h1>
+      <div>
+        {error && (
+          <MessageAlerts
+            msg={error.response?.data?.msg || error.response?.data?.err}
+            color={'danger'}
+          />
+        )}
+        {isLoading && (
+          <MessageAlerts msg={'Fetching your information!'} color={'warning'} />
+        )}
+      </div>
 
       <div>
         <div className='d-flex justify-content-around'>
@@ -73,28 +97,27 @@ const OrderDetails = () => {
         </div>
       </div>
       <div>
-        {currentData.map((order, index) => (
-          <SingleDetail data={order} key={index} category={category} />
-        ))}
+        {
+          currentData.map((order, index) => (
+            <SingleDetail data={order} key={index} />
+          ))}
       </div>
     </section>
   )
 }
-const SingleDetail = ({data, category}) => {
+const SingleDetail = ({ data, category }) => {
+ 
+ 
 
-  
-  
   return (
     <>
-      <div className='p-4'>
-        {category === 'pending' && <PendingDelivery data={data} />}
-        {category === 'inprogress' && <InProgressDelivery data={data} />}
-        {category === 'delivered' && <DeliveredDelivery data={data} />}
-      </div>
+     {category === 'pending' && <PendingDelivery data={data} />}
+      {category === 'inprogress' && <InProgressDelivery data={data} />}
+      {category === 'delivered' && <DeliveredDelivery data={data} />}
     </>
   )
 }
-const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
+const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
   const [open, setOpen] = React.useState(false)
   const token =
     'sk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4a2RyMjBjcDUzZHBxcm5ndzM4d2MifQ.qw8QZ5XfKUKrfLtF1zGJ2Q'
@@ -102,8 +125,30 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
     'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
 
   const mapRef = useRef()
-  
+  const [direction, setDirection] = useState({
+    latitude: 0,
+    longitude: 0,
+  })
+  useEffect(() => {
+    const navigation = navigator.geolocation
 
+    if (navigation) {
+      navigation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords
+        mapRef.current
+          ?.getMap()
+          ?.flyTo({ center: [longitude, latitude], zoom: 16 })
+      })
+      const watchId = navigation.watchPosition((position) => {
+        const { latitude, longitude } = position.coords
+        // mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
+        setDirection({ longitude, latitude })
+      })
+      return () => {
+        navigation.clearWatch(watchId)
+      }
+    }
+  }, [mapRef.current])
   return (
     <>
       <button className='btn btn-primary' onClick={() => setOpen(true)}>
@@ -112,11 +157,10 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
       {open && (
         <div>
           <ReactMapGL
-            ref={mapRef}
             style={{ width: 600, height: 400 }}
             initialViewState={{
-              latitude: senderLocation[0],
-              longitude: senderLocation[1],
+              latitude: direction.latitude,
+              longitude: direction.longitude,
               zoom: 16,
             }}
             mapStyle='mapbox://styles/mapbox/streets-v9'
@@ -128,6 +172,10 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
               positionOptions={{ enableHighAccuracy: true }}
               trackUserLocation={true}
             />
+            <Marker
+              latitude={direction.latitude}
+              longitude={direction.longitude}
+            />
             <Marker latitude={senderLocation[0]} longitude={senderLocation[1]}>
               <div>Sender</div>
             </Marker>
@@ -137,7 +185,6 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
             >
               <div>Receiver</div>
             </Marker>
-            <Marker latitude={agentLocation.latitude} longitude={agentLocation.longitude}/>
             <Source
               type='geojson'
               data={{
@@ -145,7 +192,7 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
                 geometry: {
                   type: 'LineString',
                   coordinates: [
-                    [agentLocation.longitude, agentLocation.latitude],
+                    [direction.longitude, direction.latitude],
                     [senderLocation[1], senderLocation[0]],
                     [receiverLocation[1], receiverLocation[0]],
                   ],
@@ -172,85 +219,60 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
     </>
   )
 }
-const DeliveryItemView = ({ data }) => {
-  const created_at = new Date(data.created_at)
-  const [location, setLocation] = useState()
 
+const DeliveryItemView = ({ data }) => {
+   const created_at = new Date(data.created_at)
+    const [location, setLocation] = useState()
+
+  
   return (
     <div>
-      <h6 className='col-6'>Category: {data.category}</h6>
+      <h6 className='col-6'>Category: {data.product.category}</h6>
       <div className='row '>
         <h6 className='col-4 text-muted'>
           Created_At: {created_at.toLocaleDateString()}{' '}
           {created_at.toLocaleTimeString()}
         </h6>
         <h6 className='col-6'></h6>
-        <h6 className='col-6'>Sender: {data.senderName}</h6>
-        <h6 className='col-6'>Sender Phone: {data.senderPhone}</h6>
-        <h6 className='col-6'>Receiver: {data.receiverName}</h6>
-        <h6 className='col-6'>Receiver Phone: {data.receiverPhone}</h6>
+        <h6 className='col-6'>Sender: {data.product.senderName}</h6>
+        <h6 className='col-6'>Sender Phone: {data.product.senderPhone}</h6>
+        <h6 className='col-6'>Receiver: {data.product.receiverName}</h6>
+        <h6 className='col-6'>Receiver Phone: {data.product.receiverPhone}</h6>
       </div>
     </div>
   )
 }
-
 const InProgressDelivery = ({ data }) => {
-  
-  const [agentLocation, setAgentLocation] = useState({
-    latitude: 0,
-    longitude: 0,
-  })
-  const agent = data.transport?.agent
-  const roomName = `agent-${data.transport?.agent}`
-  useEffect(
-    () => {
-      const connect = () => {
-        if (agent) {
-          const socket = new WebSocket(
-            `ws://localhost:8000/ws/location/${roomName}/`
-          )
-          socket.onmessage = (e) => {
-            const data = JSON.parse(e.data)
-            setAgentLocation(data)
-          }
-        }
-      }
-      connect()
-    },[agent]
-
-  )
-  
-
   return (
     <div>
-      <DeliveryItemView data={data} />
-      <div>
-        latitude: {agentLocation.latitude} longitude: {agentLocation.longitude}
-      </div>
-      <div>
-        <MapModal receiverLocation={data.receiverLocation.split(',')} senderLocation={data.senderLocation.split(',')} agentLocation = {agentLocation}/>
-      </div>
+    <DeliveryItemView data={data}/>
+    <div>
+
     </div>
-  )
+    </div>
+    )
 }
+
 const DeliveredDelivery = ({ data }) => {
   return (
     <div>
-      <DeliveryItemView data={data} />
-      <div>
+    <DeliveryItemView data={data}/>
+    <div>
 
-      </div>
+    </div>
     </div>
   )
 }
 const PendingDelivery = ({ data }) => {
   return (
     <div>
-      <DeliveryItemView data={data} />
-      <div></div>
+    <DeliveryItemView data={data}/>
+    <div>
+    </div>
     </div>
   )
 }
+
 
 
 export default OrderDetails

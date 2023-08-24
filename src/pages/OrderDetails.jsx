@@ -211,6 +211,7 @@ const InProgressDelivery = ({ data }) => {
           )
           socket.onmessage = (e) => {
             const data = JSON.parse(e.data)
+            console.log(data)
             setAgentLocation(data)
           }
         }

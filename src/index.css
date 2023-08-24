@@ -219,3 +219,7 @@ color: var(--brown-color) !important;
 
   height: 200px !important;
 }
+.map-container{
+  width: 600px;
+  height: 400px;
+}

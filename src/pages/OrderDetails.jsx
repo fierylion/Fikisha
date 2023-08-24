@@ -1,4 +1,10 @@
 import React from 'react'
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  DirectionsRenderer,
+} from '@react-google-maps/api'
 import { useEffect, useRef } from 'react'
 import useFetch from '../hooks'
 import { useGlobalContext } from '../context'
@@ -96,10 +102,37 @@ const SingleDetail = ({data, category}) => {
 }
 const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
   const [open, setOpen] = React.useState(false)
-  const token =
-    'sk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4a2RyMjBjcDUzZHBxcm5ndzM4d2MifQ.qw8QZ5XfKUKrfLtF1zGJ2Q'
-  const pub =
-    'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
+ const [distance, setDistance] = useState(null)
+ const [direction, setDirection] = useState(null)
+ const [directionResults, setDirectionResults] = useState({})
+  const key = 'AIzaSyBP3AWvc5kUTn8VwRLjQxxLUt3yj8izYT0'
+ const { isLoaded } = useJsApiLoader({
+   id: 'google-map-scripts',
+   googleMapsApiKey: key,
+ })
+ async function calculateRoute() {
+   if (!agentLocation || !senderLocation) {
+     return
+   }
+
+   const directionsService = new google.maps.DirectionsService()
+   const results = await directionsService.route({
+     origin: new google.maps.LatLng(agentLocation.lat, agentLocation.lng),
+     destination: new google.maps.LatLng(
+       senderLocation.lat,
+       senderLocation.lng
+     ),
+     travelMode: google.maps.TravelMode.DRIVING,
+   })
+
+   const distance = results.routes[0].legs[0].distance.text
+   const duration = results.routes[0].legs[0].duration.text
+   setDistance(distance)
+   setDirection(duration)
+   setDirectionResults(results)
+
+   
+ }
 
   const mapRef = useRef()
   
@@ -109,18 +142,12 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
       <button className='btn btn-primary' onClick={() => setOpen(true)}>
         Open Tracking
       </button>
-      {open && (
+      {isLoaded && (
         <div>
-          <ReactMapGL
-            ref={mapRef}
-            style={{ width: 600, height: 400 }}
-            initialViewState={{
-              latitude: senderLocation[0],
-              longitude: senderLocation[1],
-              zoom: 16,
-            }}
-            mapStyle='mapbox://styles/mapbox/streets-v9'
-            mapboxAccessToken={pub}
+          <GoogleMap
+            zoom={10}
+            center={center}
+            mapContainerClassName='map-container'
           >
             <NavigationControl position='bottom-right' />
             <GeolocateControl
@@ -137,7 +164,10 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
             >
               <div>Receiver</div>
             </Marker>
-            <Marker latitude={agentLocation.latitude} longitude={agentLocation.longitude}/>
+            <Marker
+              latitude={agentLocation.latitude}
+              longitude={agentLocation.longitude}
+            />
             <Source
               type='geojson'
               data={{
@@ -160,7 +190,7 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
                 }}
               />
             </Source>
-          </ReactMapGL>
+          </GoogleMap>
           <button
             className='btn btn-danger mb-5'
             onClick={() => setOpen(false)}
@@ -207,7 +237,7 @@ const InProgressDelivery = ({ data }) => {
       const connect = () => {
         if (agent) {
           const socket = new WebSocket(
-            `ws://localhost:8000/ws/location/${roomName}/`
+            `ws://fikisha.onrender.com/ws/location/${roomName}/`
           )
           socket.onmessage = (e) => {
             const data = JSON.parse(e.data)

@@ -8,13 +8,7 @@ import {
 import { useEffect, useRef } from 'react'
 import useFetch from '../hooks'
 import { useGlobalContext } from '../context'
-import ReactMapGL, {
-  GeolocateControl,
-  Marker,
-  NavigationControl,
-  Source,
-  Layer,
-} from 'react-map-gl'
+
 import { useState } from 'react'
 const OrderDetails = () => {
   const {obtainData, data, isLoading, error} = useFetch()
@@ -146,50 +140,20 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
         <div>
           <GoogleMap
             zoom={10}
-            center={center}
+            center={senderLocation}
             mapContainerClassName='map-container'
           >
-            <NavigationControl position='bottom-right' />
-            <GeolocateControl
-              position='top-left'
-              positionOptions={{ enableHighAccuracy: true }}
-              trackUserLocation={true}
-            />
-            <Marker latitude={senderLocation[0]} longitude={senderLocation[1]}>
+            <Marker
+              location={{ lat: agentLocation.lat, lng: agentLocation.lng }}
+            >
               <div>Sender</div>
             </Marker>
             <Marker
-              latitude={receiverLocation[0]}
-              longitude={receiverLocation[1]}
+              location={{ lat: senderLocation.lat, lng: senderLocation.lng }}
             >
               <div>Receiver</div>
             </Marker>
-            <Marker
-              latitude={agentLocation.latitude}
-              longitude={agentLocation.longitude}
-            />
-            <Source
-              type='geojson'
-              data={{
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [
-                    [agentLocation.longitude, agentLocation.latitude],
-                    [senderLocation[1], senderLocation[0]],
-                    [receiverLocation[1], receiverLocation[0]],
-                  ],
-                },
-              }}
-            >
-              <Layer
-                type='line'
-                paint={{
-                  'line-color': '#FF0000',
-                  'line-width': 2,
-                }}
-              />
-            </Source>
+            <DirectionsRenderer directions={directionResults} />
           </GoogleMap>
           <button
             className='btn btn-danger mb-5'
@@ -237,7 +201,7 @@ const InProgressDelivery = ({ data }) => {
       const connect = () => {
         if (agent) {
           const socket = new WebSocket(
-            `ws://fikisha.onrender.com/ws/location/${roomName}/`
+            `ws://localhost:8000/ws/location/${roomName}/`
           )
           socket.onmessage = (e) => {
             const data = JSON.parse(e.data)

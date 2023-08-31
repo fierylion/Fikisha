@@ -1,6 +1,8 @@
 import React, { useContext, useReducer, useState, useEffect } from 'react'
 import api from './api'
 import axios from 'axios'
+import key from './key'
+import { useJsApiLoader } from '@react-google-maps/api'
 const AppContext = React.createContext()
 const AppProvider = ({ children }) => {
  const [customer, setCustomer] = useState(
@@ -46,7 +48,7 @@ const AppProvider = ({ children }) => {
           const roomName = `agent-${req.data.id}`
           const connect = () => {}
           const socket = new WebSocket(
-            `ws://localhost:8000/ws/location/${roomName}/`
+            `wss://fierylion.me/ws/location/${roomName}/`
           )
          
           // Function to send location updates to the server
@@ -78,11 +80,16 @@ const AppProvider = ({ children }) => {
       }
       sendDriverLocation()
     }, [agent])
-
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-scripts',
+    googleMapsApiKey: key,
+    libraries: ['places'],
+  })
 
   return (
     <AppContext.Provider
       value={{
+        isLoaded,
         modalData,
         setModalData, 
         senderLocation,

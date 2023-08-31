@@ -2,13 +2,12 @@ import React from 'react'
 import { useEffect, useRef } from 'react'
 import useFetch from '../hooks'
 import { useGlobalContext } from '../context'
-import ReactMapGL, {
-  GeolocateControl,
+import {
+  GoogleMap,
+  useJsApiLoader,
   Marker,
-  NavigationControl,
-  Source,
-  Layer,
-} from 'react-map-gl'
+  DirectionsRenderer,
+} from '@react-google-maps/api'
 import { useState } from 'react'
 import MessageAlerts from '../components/MessageAlerts'
 import { useNavigate } from 'react-router-dom'
@@ -120,106 +119,74 @@ const SingleDetail = ({ data }) => {
 }
 const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
   const [open, setOpen] = React.useState(false)
-  const token =
-    'sk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4a2RyMjBjcDUzZHBxcm5ndzM4d2MifQ.qw8QZ5XfKUKrfLtF1zGJ2Q'
-  const pub =
-    'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
+  senderLocation = {lat: parseFloat(senderLocation[1]), lng:parseFloat( senderLocation[0])}
+  receiverLocation = {lat:parseFloat(receiverLocation[1]), lng:parseFloat(receiverLocation[0])}
+const [distance, setDistance] = useState(null)
+const [duration, setDuration] = useState(null)
+const [directionResults, setDirectionResults] = useState(null)
 
-  const mapRef = useRef()
-  const [direction, setDirection] = useState({
-    latitude: 0,
-    longitude: 0,
-    })
-  useEffect(() => {
-    const navigation = navigator.geolocation
+const { isLoaded } = useGlobalContext()
 
-    if (navigation) {
-      navigation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords
-        mapRef.current
-          ?.getMap()
-          ?.flyTo({ center: [longitude, latitude], zoom: 16 })
-      })
-      const watchId = navigation.watchPosition((position) => {
-        const { latitude, longitude } = position.coords
-        // mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
-        setDirection({ longitude, latitude })
-      })
-      return () => {
-        navigation.clearWatch(watchId)
-      }
-    }
-  }, [mapRef.current])
+async function calculateRoute() {
+  if (!receiverLocation || !senderLocation) {
+    return
+  }
+
+  const directionsService = new window.google.maps.DirectionsService() // Use window.google for TypeScript support
+  const results = await directionsService.route({
+    origin: new window.google.maps.LatLng(
+      senderLocation.lat,
+      senderLocation.lng
+    ),
+    destination: new window.google.maps.LatLng(
+      receiverLocation.lat,
+      receiverLocation.lng
+    ),
+    travelMode: window.google.maps.TravelMode.DRIVING,
+  })
+
+  const route = results.routes[0].legs[0]
+  setDistance(route.distance.text)
+  setDuration(route.duration.text)
+  setDirectionResults(results)
+}
+useEffect(() => {
+  console.log(isLoaded)
+  isLoaded && calculateRoute()
+}, [isLoaded])
+
+
+
   return (
     <>
-      <button className='btn btn-primary' onClick={() => setOpen(true)}>
-        Open Tracking
-      </button>
-      {open && (
-        <div>
-          <ReactMapGL
-            style={{ width: 600, height: 400 }}
-            initialViewState={ 
-              {
-                latitude: direction.latitude,
-                longitude: direction.longitude,
-                zoom: 16,
-              }
-            }
-           
-            mapStyle='mapbox://styles/mapbox/streets-v9'
-            mapboxAccessToken={pub}
-          >
-            <NavigationControl position='bottom-right' />
-            <GeolocateControl
-              position='top-left'
-              positionOptions={{ enableHighAccuracy: true }}
-              trackUserLocation={true}
-            />
-            <Marker
-            latitude={direction.latitude}
-            longitude={direction.longitude}
-            />
-            <Marker latitude={senderLocation[0]} longitude={senderLocation[1]}>
-              <div>Sender</div>
-            </Marker>
-            <Marker
-              latitude={receiverLocation[0]}
-              longitude={receiverLocation[1]}
+    {senderLocation && receiverLocation &&
+      <>
+        <button className='btn btn-primary' onClick={() => setOpen(true)}>
+          Open Tracking
+        </button>
+        {open && isLoaded && (
+          <div>
+            <GoogleMap
+              zoom={10}
+              center={senderLocation}
+              mapContainerClassName='map-container'
             >
-              <div>Receiver</div>
-            </Marker>
-            <Source
-              type='geojson'
-              data={{
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [
-                    [direction.longitude, direction.latitude],
-                    [senderLocation[1], senderLocation[0]],
-                    [receiverLocation[1], receiverLocation[0]],
-                  ],
-                },
-              }}
+              <Marker position={senderLocation} />
+              <Marker position={receiverLocation} />
+
+              {directionResults && (
+                <DirectionsRenderer directions={directionResults} />
+              )}
+            </GoogleMap>
+            <button
+              className='btn btn-danger mb-5'
+              onClick={() => setOpen(false)}
             >
-              <Layer
-                type='line'
-                paint={{
-                  'line-color': '#FF0000',
-                  'line-width': 2,
-                }}
-              />
-            </Source>
-          </ReactMapGL>
-          <button
-            className='btn btn-danger mb-5'
-            onClick={() => setOpen(false)}
-          >
-            Close
-          </button>
-        </div>
-      )}
+              Close
+            </button>
+          </div>
+        )}
+      </>}
     </>
   )
 }

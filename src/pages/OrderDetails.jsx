@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   GoogleMap,
   useJsApiLoader,
@@ -8,8 +8,9 @@ import {
 import { useEffect, useRef } from 'react'
 import useFetch from '../hooks'
 import { useGlobalContext } from '../context'
-
+import key from '../key'
 import { useState } from 'react'
+
 const OrderDetails = () => {
   const {obtainData, data, isLoading, error} = useFetch()
   const {customer} = useGlobalContext()
@@ -58,7 +59,7 @@ const OrderDetails = () => {
             Pending Driver
           </button>
           <button
-            className='btn btn-outline-warning'
+            className='btn btn-outline-'
             onClick={() => setCategory('inprogress')}
           >
             In Progress Delivery
@@ -95,68 +96,78 @@ const SingleDetail = ({data, category}) => {
   )
 }
 const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
-  const [open, setOpen] = React.useState(false)
- const [distance, setDistance] = useState(null)
- const [direction, setDirection] = useState(null)
- const [directionResults, setDirectionResults] = useState({})
-  const key = 'AIzaSyBP3AWvc5kUTn8VwRLjQxxLUt3yj8izYT0'
- const { isLoaded } = useJsApiLoader({
-   id: 'google-map-scripts',
-   googleMapsApiKey: key,
- })
- async function calculateRoute() {
-   if (!agentLocation || !senderLocation) {
-     return
-   }
+  const [open, setOpen] = useState(false)
+  const [distance, setDistance] = useState(null)
+  const [duration, setDuration] = useState(null)
+  const [directionResults, setDirectionResults] = useState(null)
 
-   const directionsService = new google.maps.DirectionsService()
-   const results = await directionsService.route({
-     origin: new google.maps.LatLng(agentLocation.lat, agentLocation.lng),
-     destination: new google.maps.LatLng(
-       senderLocation.lat,
-       senderLocation.lng
-     ),
-     travelMode: google.maps.TravelMode.DRIVING,
-   })
 
-   const distance = results.routes[0].legs[0].distance.text
-   const duration = results.routes[0].legs[0].duration.text
-   setDistance(distance)
-   setDirection(duration)
-   setDirectionResults(results)
+  const { isLoaded } = useGlobalContext();
 
-   
- }
+  async function calculateRoute() {
+    if (!agentLocation || !senderLocation) {
+      return
+    }
 
-  const mapRef = useRef()
-  
+    const directionsService = new window.google.maps.DirectionsService() // Use window.google for TypeScript support
+    const results = await directionsService.route({
+      origin: new window.google.maps.LatLng(
+        agentLocation.latitude,
+        agentLocation.longitude
+      ),
+      destination: new window.google.maps.LatLng(
+        senderLocation.lat,
+        senderLocation.lng
+      ),
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    })
 
+    const route = results.routes[0].legs[0]
+    setDistance(route.distance.text)
+    setDuration(route.duration.text)
+    setDirectionResults(results)
+  }
+
+  useEffect(() => {
+    isLoaded && calculateRoute()
+  }, [isLoaded, agentLocation, senderLocation])
+  const center = useMemo(()=>({
+              lat: agentLocation.latitude,
+              lng: agentLocation.longitude,
+            }))
   return (
     <>
       <button className='btn btn-primary' onClick={() => setOpen(true)}>
         Open Tracking
       </button>
-      {isLoaded && (
+      {open && isLoaded && (
         <div>
+          <div className='m-2 mt-5'>
+            <li>Distance: {distance}</li>
+            <li>Duration: {duration}</li>
+          </div>
           <GoogleMap
             zoom={10}
-            center={senderLocation}
+            center={center}
             mapContainerClassName='map-container'
           >
             <Marker
-              location={{ lat: agentLocation.lat, lng: agentLocation.lng }}
+              position={{
+                lat: agentLocation.latitude,
+                lng: agentLocation.longitude,
+              }}
             >
               <div>Sender</div>
             </Marker>
-            <Marker
-              location={{ lat: senderLocation.lat, lng: senderLocation.lng }}
-            >
+            <Marker position={senderLocation}>
               <div>Receiver</div>
             </Marker>
-            <DirectionsRenderer directions={directionResults} />
+            {directionResults && (
+              <DirectionsRenderer directions={directionResults} />
+            )}
           </GoogleMap>
           <button
-            className='btn btn-danger mb-5'
+            className='btn btn-danger mb-5 mt-3'
             onClick={() => setOpen(false)}
           >
             Close
@@ -201,7 +212,7 @@ const InProgressDelivery = ({ data }) => {
       const connect = () => {
         if (agent) {
           const socket = new WebSocket(
-            `ws://localhost:8000/ws/location/${roomName}/`
+            `ws://fierylion.me/ws/location/${roomName}/`
           )
           socket.onmessage = (e) => {
             const data = JSON.parse(e.data)
@@ -214,7 +225,13 @@ const InProgressDelivery = ({ data }) => {
     },[agent]
 
   )
-  
+  if(!(data && agentLocation)){
+    return <div>Loading.....</div>
+  }
+ const recLoc = data.receiverLocation
+              .split(',').map((n) => parseFloat(n));
+  const senLoc = data.senderLocation
+              .split(',').map((n) => parseFloat(n))
 
   return (
     <div>
@@ -222,9 +239,17 @@ const InProgressDelivery = ({ data }) => {
       <div>
         latitude: {agentLocation.latitude} longitude: {agentLocation.longitude}
       </div>
-      <div>
-        <MapModal receiverLocation={data.receiverLocation.split(',')} senderLocation={data.senderLocation.split(',')} agentLocation = {agentLocation}/>
-      </div>
+      {
+        <div>
+          <MapModal
+            receiverLocation={{lat:recLoc[1], lng:recLoc[0]}
+              }
+            senderLocation={{lat:senLoc[1], lng:senLoc[0]}
+              }
+            agentLocation={agentLocation}
+          />
+        </div>
+      }
     </div>
   )
 }

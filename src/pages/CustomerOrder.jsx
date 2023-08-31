@@ -1,16 +1,14 @@
-import React, {useState, useEffect} from 'react'
-import ReactMapGL, {
-  GeolocateControl,
-  Marker,
-  NavigationControl,
-} from 'react-map-gl'
+import React, {useState, useEffect, useCallback} from 'react'
+import { debounce } from 'lodash'
 import { useGlobalContext } from '../context'
 import MessageAlerts from '../components/MessageAlerts'
 import { useMemo } from 'react'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../hooks'
-
+import key from '../key'
+import { geocodeByLatLng } from 'react-google-places-autocomplete'
+import { GoogleMap, StandaloneSearchBox, Marker} from '@react-google-maps/api'
 const CustomerOrder = () => {
   //context
   const [category, setCategory] = useState('document')
@@ -30,7 +28,7 @@ const CustomerOrder = () => {
     modalData,
     setModalData,
   } = useGlobalContext()
-  console.log(senderLocation)
+ 
   const {obtainData, data, error, isLoading} = useFetch()
   const navigate = useNavigate()
   const handleSubmit = (e) => {
@@ -260,50 +258,97 @@ const CustomerOrder = () => {
   )
 }
 const MapModal = ({lat, lng, setLoc, closeMap}) => {
-  const token =
-    'sk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4a2RyMjBjcDUzZHBxcm5ndzM4d2MifQ.qw8QZ5XfKUKrfLtF1zGJ2Q'
-    const pub =
-      'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
-      
-  
-  const mapRef = useRef()
+ 
+   const [map, setMap] = useState(null)
+   const [markerPosition, setMarkerPosition] = useState({lat,lng})
+   const [searchBox, setSearchBox] = useState(null)
+  const{isLoaded} = useGlobalContext()
+
+  const center = useMemo(()=>({lat, lng}))
+   const handleMapLoad = useCallback((mapInstance) => {
+     setMap(mapInstance)
+   }, [])
+
+   const handleSearchBoxLoad = useCallback((searchBoxInstance) => {
+     setSearchBox(searchBoxInstance)
+   }, [])
+   const handleCenterChanged =debounce( ()=>{
+    if(map){
+      console.log(map)
+      const newCenter = map.getCenter();
+      const newPosition = { lat: newCenter.lat(), lng: newCenter.lng() }
+      if(newPosition.lat !== markerPosition.lat || newPosition.lng !== markerPosition.lng){
+        setMarkerPosition(newPosition)
+        setLoc(newPosition)
+
+
+      }
+          }
+
+   }, 100)
+    const handlePlacesChanged = useCallback(() => {
+      const places = searchBox.getPlaces()
+      if (places && places.length > 0) {
+        const selectedLocation = {
+          lat: places[0].geometry.location.lat(),
+          lng: places[0].geometry.location.lng(),
+        }
+        const zoom = 16
+        if(map){
+          map.panTo(selectedLocation)
+          map.setZoom(zoom)
+          setLoc(selectedLocation)
+
+        }
+        
+      }
+    }, [searchBox, setLoc])
+    
  
   return (
     <>
-      <div>
-        <ReactMapGL
-          ref={mapRef}
-          mapboxAccessToken={pub}
-          initialViewState={{
-            longitude: parseInt(lng),
-            latitude: parseInt(lat),
-            zoom: 4,
-          }}
-          mapStyle='mapbox://styles/mapbox/streets-v11'
-        >
-          <Marker
-            latitude={lat}
-            longitude={lng}
-            draggable
-            onDragEnd={(e) => setLoc({ lng: e.lngLat.lng, lat: e.lngLat.lat })}
-          />
-          <NavigationControl position='bottom-right' />
-          <GeolocateControl
-            position='top-left'
-            trackUserLocation
-            onGeolocate={(e) =>
-              setLoc({
-                lng: e.coords.longitude,
-                lat: e.coords.latitude,
-              })
-            }
-          />
-          {/* <Geocoder /> */}
-        </ReactMapGL>
-      </div>
-      <button className='btn btn-danger mb-5' onClick={()=>closeMap(false)}>
-        Close
-      </button>
+      <>
+        <div>
+          {isLoaded && (
+            <>
+              <div>
+              <h4>Search for a location</h4>
+                <StandaloneSearchBox
+                  onLoad={handleSearchBoxLoad}
+                  onPlacesChanged={handlePlacesChanged}
+                >
+                  <input
+                    type='text'
+                    placeholder='Search for a location'
+                  className='form-control mb-3'
+
+                  />
+                </StandaloneSearchBox>
+              </div>
+              <GoogleMap
+                zoom={16}
+                onCenterChanged={handleCenterChanged}
+                center={markerPosition}
+                onLoad={handleMapLoad}
+                mapContainerClassName='map-container'
+              >
+                
+                  <Marker
+                    
+                    position={markerPosition}
+                    
+                  />
+                
+
+                {/* <Geocoder /> */}
+              </GoogleMap>
+            </>
+          )}
+        </div>
+        <button className='btn btn-danger mb-5' onClick={() => closeMap(false)}>
+          Close
+        </button>
+      </>
     </>
   )
 }

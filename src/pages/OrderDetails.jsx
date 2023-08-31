@@ -212,7 +212,7 @@ const InProgressDelivery = ({ data }) => {
       const connect = () => {
         if (agent) {
           const socket = new WebSocket(
-            `ws://fierylion.me/ws/location/${roomName}/`
+            `wss://fierylion.me/ws/location/${roomName}/`
           )
           socket.onmessage = (e) => {
             const data = JSON.parse(e.data)

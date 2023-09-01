@@ -1,14 +1,13 @@
 import React from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import useFetch from '../hooks'
 import { useGlobalContext } from '../context'
-import ReactMapGL, {
-  GeolocateControl,
+import {
+  GoogleMap,
+  useJsApiLoader,
   Marker,
-  NavigationControl,
-  Source,
-  Layer,
-} from 'react-map-gl'
+  DirectionsRenderer,
+} from '@react-google-maps/api'
 import { useState } from 'react'
 import MessageAlerts from '../components/MessageAlerts'
 import { useNavigate } from 'react-router-dom'
@@ -33,18 +32,21 @@ const OrderDetails = () => {
   useEffect(
     ()=>{
       const filterOders = (dt, ind)=>{
+        
       if(category==='pending'){
         return (dt.transport === null)
       }
       if(category==='inprogress'){
-        return (dt.transpot !== null && dt.transport.status==='pending')
+        console.log(dt)
+        return ( dt.status==='pending')
       }
-      return dt.transpot !== null && dt.transport.status === 'delivered'
+      return dt.transport !== null && dt.status === 'delivered'
     }
     if(data){
       data.orders.sort(
             (a, b) => new Date(b.created_at) - new Date(a.created_at)
           )
+    
       setCurrentData(data.orders.filter(filterOders))
     }
 
@@ -75,14 +77,9 @@ const OrderDetails = () => {
 
       <div>
         <div className='d-flex justify-content-around'>
+       
           <button
             className='btn btn-outline-primary'
-            onClick={() => setCategory('pending')}
-          >
-            Pending Driver
-          </button>
-          <button
-            className='btn btn-outline-warning'
             onClick={() => setCategory('inprogress')}
           >
             In Progress Delivery
@@ -99,7 +96,7 @@ const OrderDetails = () => {
       <div>
         {
           currentData.map((order, index) => (
-            <SingleDetail data={order} key={index} />
+            <SingleDetail data={order} key={index} category={category}/>
           ))}
       </div>
     </section>
@@ -107,109 +104,83 @@ const OrderDetails = () => {
 }
 const SingleDetail = ({ data, category }) => {
  
- 
+ console.log('current data', category)
 
   return (
     <>
-     {category === 'pending' && <PendingDelivery data={data} />}
-      {category === 'inprogress' && <InProgressDelivery data={data} />}
-      {category === 'delivered' && <DeliveredDelivery data={data} />}
+      <div className='m-3'>
+        {category === 'pending' && <PendingDelivery data={data} />}
+        {category === 'inprogress' && <InProgressDelivery data={data} />}
+        {category === 'delivered' && <DeliveredDelivery data={data} />}
+      </div>
     </>
   )
 }
-const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
-  const [open, setOpen] = React.useState(false)
-  const token =
-    'sk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4a2RyMjBjcDUzZHBxcm5ndzM4d2MifQ.qw8QZ5XfKUKrfLtF1zGJ2Q'
-  const pub =
-    'pk.eyJ1IjoiZmllcnlsaW9uIiwiYSI6ImNsbGc4aW0weDBwbWYzZ28zc3VxMWozb2MifQ.1SZ_EvI7B-uC8iJht9F46w'
+const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
+  const [open, setOpen] = useState(false)
+  const [distance, setDistance] = useState(null)
+  const [duration, setDuration] = useState(null)
+  const [directionResults, setDirectionResults] = useState(null)
 
-  const mapRef = useRef()
-  const [direction, setDirection] = useState({
-    latitude: 0,
-    longitude: 0,
-  })
-  useEffect(() => {
-    const navigation = navigator.geolocation
+  const { isLoaded } = useGlobalContext()
 
-    if (navigation) {
-      navigation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords
-        mapRef.current
-          ?.getMap()
-          ?.flyTo({ center: [longitude, latitude], zoom: 16 })
-      })
-      const watchId = navigation.watchPosition((position) => {
-        const { latitude, longitude } = position.coords
-        // mapRef.current?.getMap()?.flyTo({center:[longitude, latitude], zoom:16})
-        setDirection({ longitude, latitude })
-      })
-      return () => {
-        navigation.clearWatch(watchId)
-      }
+  async function calculateRoute() {
+    if (!agentLocation || !senderLocation) {
+      return
     }
-  }, [mapRef.current])
+
+    const directionsService = new window.google.maps.DirectionsService() // Use window.google for TypeScript support
+    const results = await directionsService.route({
+      origin: new window.google.maps.LatLng(
+        agentLocation.latitude,
+        agentLocation.longitude
+      ),
+      destination: new window.google.maps.LatLng(
+        senderLocation.lat,
+        senderLocation.lng
+      ),
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    })
+
+    const route = results.routes[0].legs[0]
+    setDistance(route.distance.text)
+    setDuration(route.duration.text)
+    setDirectionResults(results)
+  }
+
+  useEffect(() => {
+    isLoaded && calculateRoute()
+  }, [isLoaded, agentLocation, senderLocation])
+  const center = useMemo(() => ({
+    lat: agentLocation.latitude,
+    lng: agentLocation.longitude,
+  }))
   return (
     <>
       <button className='btn btn-primary' onClick={() => setOpen(true)}>
         Open Tracking
       </button>
-      {open && (
+      {open && isLoaded && (
         <div>
-          <ReactMapGL
-            style={{ width: 600, height: 400 }}
-            initialViewState={{
-              latitude: direction.latitude,
-              longitude: direction.longitude,
-              zoom: 16,
-            }}
-            mapStyle='mapbox://styles/mapbox/streets-v9'
-            mapboxAccessToken={pub}
+          <div className='m-2 mt-5'>
+            <li>Distance: {distance}</li>
+            <li>Duration: {duration}</li>
+          </div>
+          <GoogleMap
+            zoom={10}
+            center={center}
+            mapContainerClassName='map-container'
           >
-            <NavigationControl position='bottom-right' />
-            <GeolocateControl
-              position='top-left'
-              positionOptions={{ enableHighAccuracy: true }}
-              trackUserLocation={true}
-            />
-            <Marker
-              latitude={direction.latitude}
-              longitude={direction.longitude}
-            />
-            <Marker latitude={senderLocation[0]} longitude={senderLocation[1]}>
-              <div>Sender</div>
-            </Marker>
-            <Marker
-              latitude={receiverLocation[0]}
-              longitude={receiverLocation[1]}
-            >
+          
+            <Marker position={senderLocation}>
               <div>Receiver</div>
             </Marker>
-            <Source
-              type='geojson'
-              data={{
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [
-                    [direction.longitude, direction.latitude],
-                    [senderLocation[1], senderLocation[0]],
-                    [receiverLocation[1], receiverLocation[0]],
-                  ],
-                },
-              }}
-            >
-              <Layer
-                type='line'
-                paint={{
-                  'line-color': '#FF0000',
-                  'line-width': 2,
-                }}
-              />
-            </Source>
-          </ReactMapGL>
+            {directionResults && (
+              <DirectionsRenderer directions={directionResults} />
+            )}
+          </GoogleMap>
           <button
-            className='btn btn-danger mb-5'
+            className='btn btn-danger mb-5 mt-3'
             onClick={() => setOpen(false)}
           >
             Close
@@ -219,7 +190,6 @@ const MapModal = ({ receiverLocation, senderLocation, setLoc, closeMap }) => {
     </>
   )
 }
-
 const DeliveryItemView = ({ data }) => {
    const created_at = new Date(data.created_at)
     const [location, setLocation] = useState()
@@ -243,14 +213,33 @@ const DeliveryItemView = ({ data }) => {
   )
 }
 const InProgressDelivery = ({ data }) => {
+  const senLoc = data.product.senderLocation
+              .split(',').map((n) => parseFloat(n))
+  const [location, setLocation] = useState({latitude:0, longitude:0})
+  useEffect(() => {
+        const watchPosition = navigator.geolocation.watchPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords
+              setLocation({latitude, longitude})
+            },
+            (error) => {
+              console.error('Error getting location:', error)
+            }
+          )
+          return () => {
+            navigator.geolocation.clearWatch(watchPosition)
+           
+
+          } }, [])
+
   return (
     <div>
-    <DeliveryItemView data={data}/>
-    <div>
-
+      <DeliveryItemView data={data} />
+      <div>
+        <MapModal senderLocation={{lat:senLoc[1], lng:senLoc[0]}} agentLocation={location} />
+      </div>
     </div>
-    </div>
-    )
+  )
 }
 
 const DeliveredDelivery = ({ data }) => {
@@ -264,10 +253,12 @@ const DeliveredDelivery = ({ data }) => {
   )
 }
 const PendingDelivery = ({ data }) => {
+  console.log('inprogress')
   return (
     <div>
     <DeliveryItemView data={data}/>
     <div>
+   
     </div>
     </div>
   )

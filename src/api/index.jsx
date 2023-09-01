@@ -1,5 +1,5 @@
 import axios from 'axios'
-const dev = false
+const dev = true
 const api = axios.create({
   baseURL: dev ? 'http://localhost:8000/' : 'https://fierylion.me/',
 })

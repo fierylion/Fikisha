@@ -16,12 +16,22 @@
 h1,h2,h3,h4,h5,h6{
   font-family: var(--header2-font);
 }
+.pointer{
+  cursor: pointer;
+}
 p{
   font-family: var(--body-font);
   line-height: 1.5;
   font-size: large;
 
 }
+.line{
+  border-bottom: 1px solid #d5dfece5;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 
 html {
 

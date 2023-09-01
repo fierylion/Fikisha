@@ -25,22 +25,38 @@ const Donor = () => {
           />
         )}
         {isLoading && (
-          <MessageAlerts
-            msg={'Fetching your information!'}
-            color={'warning'}
-          />
+          <MessageAlerts msg={'Fetching your information!'} color={'warning'} />
         )}
       </div>
       <div className='m-4'>
         <h3>Welcome Back,</h3>
         <h5>Daniel</h5>
         <small>Preview your summary</small>
-        <small className='d-block   p-1 my-2 fw-bold text-muted '>Email: {data && data.customer.email}</small>
-        <button className='btn btn-outline-primary ms-2 my-3' onClick={()=>{ navigate('/customer/order')
-
-        }}>Place Order</button>
+        <small className='d-block   p-1 my-2 fw-bold text-muted '>
+          Email: {data && data.customer.email}
+        </small>
+        <div className='d-flex justify-content-around'>
+          <button
+            className='btn btn-outline-primary ms-2 my-3'
+            onClick={() => {
+              navigate('/customer/order')
+            }}
+          >
+            Place Order
+          </button>
+          <button
+            className='btn btn-outline-primary ms-2 my-3'
+            onClick={() => {
+              navigate('/customer/order/details')
+            }}
+          >
+            Previous Orders
+          </button>
+        </div>
       </div>
-      {data && <Summary success={data.orders} number = {data.successfull_orders}/>}
+      {data && (
+        <Summary success={data.orders} number={data.successfull_orders} />
+      )}
       {/* <DonorProposals propos={[1, 2, 3, 4, 5]} /> */}
       <Graphs />
       <Impact />

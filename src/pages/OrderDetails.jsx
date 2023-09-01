@@ -151,7 +151,7 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
             center={center}
             mapContainerClassName='map-container'
           >
-            <Marker
+            {/* <Marker
               position={{
                 lat: agentLocation.latitude,
                 lng: agentLocation.longitude,
@@ -161,7 +161,7 @@ const MapModal = ({ receiverLocation, senderLocation, agentLocation }) => {
             </Marker>
             <Marker position={senderLocation}>
               <div>Receiver</div>
-            </Marker>
+            </Marker> */}
             {directionResults && (
               <DirectionsRenderer directions={directionResults} />
             )}
